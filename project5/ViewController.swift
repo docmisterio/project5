@@ -4,7 +4,6 @@ class ViewController: UITableViewController {
     var allWords = [String]()
     var usedWords = [String]()
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -56,12 +55,22 @@ class ViewController: UITableViewController {
     func submit(_ answer: String) {
         let lowerAnswer = answer.lowercased()
         
-        let errorTitle: String
-        let errorMessage: String
+        if isNoWord(word: lowerAnswer) {
+            showErrorMessages(errorTitle: "No Word Entered", errorMessage: "Did you just hit enter? For real, you can't just enter empty space")
+        }
+        if isTooShort(word: lowerAnswer) {
+            showErrorMessages(errorTitle: "Too Short", errorMessage: "Oooooh a word with \(lowerAnswer.count) letters. Cool.")
+            return
+        }
+        if isOriginalWord(word: lowerAnswer) {
+            showErrorMessages(errorTitle: "Cheater", errorMessage: "You can't just enter the original word and think it's ok...")
+            return
+        }
         
         if isPossible(word: lowerAnswer) {
             if isOriginal(word: lowerAnswer) {
                 if isReal(word: lowerAnswer) {
+                    
                     usedWords.insert(answer, at: 0)
                     
                     let indexPath = IndexPath(row: 0, section: 0)
@@ -69,23 +78,15 @@ class ViewController: UITableViewController {
                     
                     return
                 } else {
-                    errorTitle = "That's not a word"
-                    errorMessage = "What kind of nonsense is '\(lowerAnswer)'. Do Better."
+                    showErrorMessages(errorTitle: "That's not a word", errorMessage: "What kind of nonsense is '\(lowerAnswer)'. Do Better.")
                 }
             } else {
-                errorTitle = "Not Very Original"
-                errorMessage = "You've, uh, used that one before... "
+                showErrorMessages(errorTitle: "Not Very Original", errorMessage: "You've, uh, used that one before... ")
             }
         } else {
             guard let title = title?.lowercased() else { return }
-            errorTitle = "That's not Possible"
-            errorMessage = "Wait. How do you think '\(lowerAnswer)' can be found in '\(title)'?"
+            showErrorMessages(errorTitle: "That's not Possible", errorMessage: "Wait. How do you think '\(lowerAnswer)' can be found in '\(title)'?")
         }
-        
-        let ac = UIAlertController(title: errorTitle, message: errorMessage, preferredStyle: .alert)
-        ac.addAction(UIAlertAction(title: "OK", style: .default))
-        
-        present(ac, animated: true)
     }
     
     func isPossible(word: String) -> Bool {
@@ -106,14 +107,30 @@ class ViewController: UITableViewController {
     }
     
     func isReal(word: String) -> Bool {
-        guard let tempWord = title?.lowercased() else { return false }
-        if word == tempWord { return false }
-        if word.count <= 3 { return false }
-        
         let checker = UITextChecker()
         let range = NSRange(location: 0, length: word.utf16.count)
         let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
         return misspelledRange.location == NSNotFound
+    }
+    
+    func isOriginalWord(word: String) -> Bool {
+        guard let tempWord = title?.lowercased() else { return false }
+        return word == tempWord
+    }
+    
+    func isTooShort(word: String) -> Bool {
+        return word.count <= 3
+    }
+    
+    func isNoWord(word: String) -> Bool {
+        return word == ""
+    }
+    
+    func showErrorMessages(errorTitle: String, errorMessage: String) {
+        let ac = UIAlertController(title: errorTitle, message: errorMessage, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        present(ac, animated: true)
     }
 }
 
