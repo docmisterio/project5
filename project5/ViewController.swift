@@ -13,8 +13,6 @@ class ViewController: UITableViewController {
         if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt") {
             if let startWords = try? String(contentsOf: startWordsURL) {
                 allWords = startWords.components(separatedBy: "\n")
-                print(allWords.randomElement()!)
-                
             }
         }
         
@@ -58,6 +56,9 @@ class ViewController: UITableViewController {
     func submit(_ answer: String) {
         let lowerAnswer = answer.lowercased()
         
+        let errorTitle: String
+        let errorMessage: String
+        
         if isPossible(word: lowerAnswer) {
             if isOriginal(word: lowerAnswer) {
                 if isReal(word: lowerAnswer) {
@@ -65,9 +66,26 @@ class ViewController: UITableViewController {
                     
                     let indexPath = IndexPath(row: 0, section: 0)
                     tableView.insertRows(at: [indexPath], with: .automatic)
+                    
+                    return
+                } else {
+                    errorTitle = "That's not a word"
+                    errorMessage = "What kind of nonsense is '\(lowerAnswer)'. Do Better."
                 }
+            } else {
+                errorTitle = "Not Very Original"
+                errorMessage = "You've, uh, used that one before... "
             }
+        } else {
+            guard let title = title?.lowercased() else { return }
+            errorTitle = "That's not Possible"
+            errorMessage = "Wait. How do you think '\(lowerAnswer)' can be found in '\(title)'?"
         }
+        
+        let ac = UIAlertController(title: errorTitle, message: errorMessage, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        present(ac, animated: true)
     }
     
     func isPossible(word: String) -> Bool {
