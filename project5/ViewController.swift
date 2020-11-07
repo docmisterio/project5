@@ -3,7 +3,7 @@ import UIKit
 class ViewController: UITableViewController {
     var allWords = [String]()
     var usedWords = [String]()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -54,23 +54,31 @@ class ViewController: UITableViewController {
     
     func submit(_ answer: String) {
         let lowerAnswer = answer.lowercased()
+        guard let title = title?.lowercased() else { return }
+        
+        let tooShort = Errors(title: "Too Short", message: "Oooooh a word with \(lowerAnswer.count) letters. Cool.")
+        let notAWord = Errors(title: "No Word Entered", message: "Did you just hit enter? For real, you can't just enter empty space")
+        let sameWordAsOriginal = Errors(title: "Cheater", message:  "You can't just enter the original word and think it's ok...")
+        let notRealWord = Errors(title: "That's not a word", message: "What kind of nonsense is '\(lowerAnswer)'. Do Better.")
+        let notOriginal = Errors(title: "Not Very Original", message: "You've, uh, used that one before... ")
+        let notPossible = Errors(title: "That's not Possible", message: "Wait. How do you think '\(lowerAnswer)' can be found in '\(title)'?")
         
         if isNoWord(word: lowerAnswer) {
-            showErrorMessages(errorTitle: "No Word Entered", errorMessage: "Did you just hit enter? For real, you can't just enter empty space")
+            showErrorMessages(errorTitle: notAWord.title , errorMessage: notAWord.message)
+            return
         }
         if isTooShort(word: lowerAnswer) {
-            showErrorMessages(errorTitle: "Too Short", errorMessage: "Oooooh a word with \(lowerAnswer.count) letters. Cool.")
+            showErrorMessages(errorTitle: tooShort.title, errorMessage: tooShort.message)
             return
         }
         if isOriginalWord(word: lowerAnswer) {
-            showErrorMessages(errorTitle: "Cheater", errorMessage: "You can't just enter the original word and think it's ok...")
+            showErrorMessages(errorTitle: sameWordAsOriginal.title, errorMessage: sameWordAsOriginal.message)
             return
         }
         
         if isPossible(word: lowerAnswer) {
             if isOriginal(word: lowerAnswer) {
                 if isReal(word: lowerAnswer) {
-                    
                     usedWords.insert(lowerAnswer, at: 0)
                     
                     let indexPath = IndexPath(row: 0, section: 0)
@@ -78,14 +86,13 @@ class ViewController: UITableViewController {
                     
                     return
                 } else {
-                    showErrorMessages(errorTitle: "That's not a word", errorMessage: "What kind of nonsense is '\(lowerAnswer)'. Do Better.")
+                    showErrorMessages(errorTitle: notRealWord.title , errorMessage: notRealWord.message)
                 }
             } else {
-                showErrorMessages(errorTitle: "Not Very Original", errorMessage: "You've, uh, used that one before... ")
+                showErrorMessages(errorTitle: notOriginal.title, errorMessage: notOriginal.message)
             }
         } else {
-            guard let title = title?.lowercased() else { return }
-            showErrorMessages(errorTitle: "That's not Possible", errorMessage: "Wait. How do you think '\(lowerAnswer)' can be found in '\(title)'?")
+            showErrorMessages(errorTitle: notPossible.title, errorMessage: notPossible.message)
         }
     }
     
@@ -134,3 +141,7 @@ class ViewController: UITableViewController {
     }
 }
 
+struct Errors {
+    var title: String
+    var message: String
+}
